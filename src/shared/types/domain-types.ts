@@ -72,6 +72,7 @@ export interface QueueData {
     priority: string[];
     shuffled: number[];
     songs: Record<string, QueueSong>;
+    unshuffled?: string[];
 }
 
 export type QueueSong = Song & {
