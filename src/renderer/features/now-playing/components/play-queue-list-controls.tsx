@@ -17,7 +17,7 @@ import {
 } from '/@/renderer/features/shared/components/list-config-menu';
 import { MoreButton } from '/@/renderer/features/shared/components/more-button';
 import { SearchInput } from '/@/renderer/features/shared/components/search-input';
-import { useCurrentServer, usePlayerStoreBase } from '/@/renderer/store';
+import { useCurrentServer, usePlayerShuffle, usePlayerStoreBase } from '/@/renderer/store';
 import { hasFeature } from '/@/shared/api/utils';
 import { ActionIcon } from '/@/shared/components/action-icon/action-icon';
 import { Box } from '/@/shared/components/box/box';
@@ -27,7 +27,7 @@ import { Group } from '/@/shared/components/group/group';
 import { Icon } from '/@/shared/components/icon/icon';
 import { toast } from '/@/shared/components/toast/toast';
 import { ServerFeature } from '/@/shared/types/features-types';
-import { ItemListKey, ListDisplayType } from '/@/shared/types/types';
+import { ItemListKey, ListDisplayType, PlayerShuffle } from '/@/shared/types/types';
 
 const TIER_1_MAX = 480;
 const TIER_2_MAX = 380;
@@ -58,6 +58,7 @@ export const PlayQueueListControls = ({
     const { t } = useTranslation();
     const server = useCurrentServer();
     const player = usePlayer();
+    const shuffle = usePlayerShuffle();
     const supportsQueue = hasFeature(server, ServerFeature.SERVER_PLAY_QUEUE);
     const toolbarRef = useRef<HTMLDivElement>(null);
     const [overflowTier, setOverflowTier] = useState<OverflowTier>(0);
@@ -112,6 +113,12 @@ export const PlayQueueListControls = ({
 
     const handleShuffleQueue = () => {
         player.shuffleAll();
+        const index = usePlayerStoreBase.getState().player.index;
+        if (index !== -1) {
+            setTimeout(() => {
+                tableRef.current?.scrollToIndex(index);
+            }, 0);
+        }
     };
 
     const handleCreatePlaylistFromQueue = (e?: MouseEvent<HTMLButtonElement>) => {
@@ -170,7 +177,10 @@ export const PlayQueueListControls = ({
                 <span className={styles.overflowTier3}>
                     <ActionIcon
                         icon="mediaShuffle"
-                        iconProps={{ size: 'lg' }}
+                        iconProps={{
+                            color: shuffle === PlayerShuffle.NONE ? 'default' : 'primary',
+                            size: 'lg',
+                        }}
                         onClick={handleShuffleQueue}
                         tooltip={{ label: t('player.shuffle') }}
                         variant="subtle"
@@ -226,7 +236,16 @@ export const PlayQueueListControls = ({
                             {showTier3Menu && (
                                 <>
                                     <DropdownMenu.Item
-                                        leftSection={<Icon icon="mediaShuffle" />}
+                                        leftSection={
+                                            <Icon
+                                                color={
+                                                    shuffle === PlayerShuffle.NONE
+                                                        ? 'default'
+                                                        : 'primary'
+                                                }
+                                                icon="mediaShuffle"
+                                            />
+                                        }
                                         onClick={handleShuffleQueue}
                                     >
                                         {t('player.shuffle')}

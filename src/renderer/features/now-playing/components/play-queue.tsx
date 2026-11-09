@@ -72,8 +72,21 @@ export const PlayQueue = forwardRef<ItemListHandle, QueueProps>(
                 setUpNextIds(usePlayerStore.getState().queue.priority);
             };
 
+            let prevIndex = usePlayerStore.getState().player.index;
+
             const unsub = subscribePlayerQueue(() => {
                 setQueue();
+                const nextIndex = usePlayerStore.getState().player.index;
+                if (followCurrentSong && nextIndex !== -1 && nextIndex !== prevIndex) {
+                    prevIndex = nextIndex;
+                    setTimeout(() => {
+                        tableRef.current?.scrollToIndex(nextIndex, {
+                            align: 'center',
+                            behavior: 'auto',
+                        });
+                    }, 0);
+                }
+                prevIndex = nextIndex;
             });
 
             const unsubCurrentTrack = subscribeCurrentTrack((e) => {
